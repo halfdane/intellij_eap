@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+require 'fileutils'
 require File.expand_path(File.dirname(__FILE__) + '/config')
 
 
@@ -11,6 +12,8 @@ class Downloader
 
     def download url, force = false
         download_path = File.expand_path(DOWNLOAD_PATH)
+        
+        FileUtils.mkdir_p download_path unless File.exists?(download_path)
         
         filename = download_path + "/" + url.gsub(/.+\//, '')
         if File.exists? filename then
