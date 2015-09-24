@@ -10,7 +10,9 @@ class Downloader
     private
 
     def download url, force = false
-        filename = DOWNLOAD_PATH + "/" + url.gsub(/.+\//, '')
+        download_path = File.expand_path(DOWNLOAD_PATH)
+        
+        filename = download_path + "/" + url.gsub(/.+\//, '')
         if File.exists? filename then
             puts "#{url} is already downloaded: #{filename}"
             return unless force
@@ -19,7 +21,7 @@ class Downloader
         end
 
         puts "downloading #{url}..."
-        Dir.chdir(DOWNLOAD_PATH){ `wget #{url}` }
+        Dir.chdir(download_path){ `wget #{url}` }
     end
 
     def last_build_download_urls
