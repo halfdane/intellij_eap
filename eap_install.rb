@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+require 'fileutils'
 require File.expand_path(File.dirname(__FILE__) + '/config')
 
 class Installer
@@ -20,6 +21,8 @@ class Installer
         end
 
         begin
+            FileUtils.mkdir_p installation_path unless File.exists?(installation_path)
+            
             Dir.chdir(installation_path) do
                 puts "untarring '#{filename}'"
                 `tar zxfv #{filepath}`
