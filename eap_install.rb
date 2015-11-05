@@ -4,7 +4,7 @@ require File.expand_path(File.dirname(__FILE__) + '/config')
 
 class Downloader
     def download_idea force = false
-        download(last_build_download_urls, force)
+        return download(last_build_download_urls, force)
     end
 
     private
@@ -15,13 +15,14 @@ class Downloader
         filename = download_path + "/" + url.gsub(/.+\//, '')
         if File.exists? filename then
             puts "#{url} is already downloaded: #{filename}"
-            return unless force
+            return false unless force
             puts "download is forced"
             `rm #{filename}`
         end
 
         puts "downloading #{url}..."
         Dir.chdir(download_path){ `wget #{url}` }
+        return true
     end
 
     def last_build_download_urls
@@ -57,33 +58,17 @@ class Installer
     def install_idea filepath, force = false
         filename = File.basename(filepath)
         installation_path = File.expand_path(INSTALLATION_PATH)
-        
-        Dir.chdir(installation_path) do
-            puts "untarring '#{filename}'"
-            `tar zxfv #{filepath}`
-        
-        end
-        
+               
         dest_dir = installation_path + "/" + `ls -t #{installation_path} | head -n 1`.strip
         puts "dest_dir: #{dest_dir}"
 
-<<<<<<< HEAD
         begin
             FileUtils.mkdir_p installation_path unless File.exists?(installation_path)
             
             Dir.chdir(installation_path) do
                 puts "untarring '#{filename}'"
-                `tar zxfv #{filepath}`
+                `tar xzf #{filepath}`
             end
-            if defined?(IDEA_CONFIG)
-                puts "copying config"
-                `cp -r #{IDEA_CONFIG}/* #{dest_dir}/bin`
-            end
-=======
-        if defined?(IDEA_CONFIG)
-            puts "copying config"
-            `cp -r #{IDEA_CONFIG}/* #{dest_dir}/bin`
->>>>>>> Simplify installation process
         end
 
         if defined?(LINK_TO)
@@ -107,9 +92,13 @@ argv = ARGV.join("")
 force = argv.include?("f")
 
 d = Downloader.new
-d.download_idea(force)
+if (d.download_idea(force))
+    i = Installer.new
+    i.install_latest_idea(force)
+else
+    puts "Nothing new dowloaded - skipping installation"
+end
 
-i = Installer.new
-i.install_latest_idea(force)
+
 
 
