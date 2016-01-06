@@ -2,6 +2,11 @@
 require 'fileutils'
 require File.expand_path(File.dirname(__FILE__) + '/config')
 
+
+def log message
+    `logger -t "Intellij installer" -s "#{message}"`
+end
+
 class Downloader
     def download_idea force = false
         return download(last_build_download_urls, force)
@@ -14,13 +19,13 @@ class Downloader
         
         filename = download_path + "/" + url.gsub(/.+\//, '')
         if File.exists? filename then
-            puts "#{url} is already downloaded: #{filename}"
+            log "#{url} is already downloaded: #{filename}"
             return false unless force
-            puts "download is forced"
+            log "download is forced"
             `rm #{filename}`
         end
 
-        puts "downloading #{url}..."
+        log "downloading #{url}..."
         Dir.chdir(download_path){ `wget #{url}` }
         return true
     end
@@ -34,7 +39,7 @@ class Downloader
         download_url = nil
         eap_page = nil
 
-        puts "checking latest EAP build"
+        log "checking latest EAP build"
         url = URI.parse("http://confluence.jetbrains.com" + EAP_URL)
         eap_page = Net::HTTP.start(url.host, url.port) do |http|
             http.get(EAP_URL)
@@ -42,7 +47,7 @@ class Downloader
 
         download_pattern = /.*(https\:\/\/download\.jetbrains\.com\/idea\/ideaIU[^"]+\.tar\.gz)".*/m
         download_url = download_pattern.match(eap_page.body)[1]
-        puts "   found #{download_url}"
+        log "   found #{download_url}"
 
         return (@urls = download_url)
     end
@@ -60,24 +65,24 @@ class Installer
         installation_path = File.expand_path(INSTALLATION_PATH)
                
         dest_dir = installation_path + "/" + `ls -t #{installation_path} | head -n 1`.strip
-        puts "dest_dir: #{dest_dir}"
+        log "dest_dir: #{dest_dir}"
 
         begin
             FileUtils.mkdir_p installation_path unless File.exists?(installation_path)
             
             Dir.chdir(installation_path) do
-                puts "untarring '#{filename}'"
+                log "untarring '#{filename}'"
                 `tar xzf #{filepath}`
             end
         end
 
         if defined?(LINK_TO)
             link_to = File.expand_path(LINK_TO)
-            puts "linking #{dest_dir} to #{link_to}"
+            log "linking #{dest_dir} to #{link_to}"
             `rm -f #{link_to} && ln -sf #{dest_dir} #{LINK_TO}`
         end
 
-        puts "installation finished"
+        log "installation finished"
     end
 
     def find_latest_distr
@@ -91,12 +96,14 @@ end
 argv = ARGV.join("")
 force = argv.include?("f")
 
+log "Checking for new versions"
+
 d = Downloader.new
 if (d.download_idea(force))
     i = Installer.new
     i.install_latest_idea(force)
 else
-    puts "Nothing new dowloaded - skipping installation"
+    log "Nothing new dowloaded - skipping installation"
 end
 
 

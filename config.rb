@@ -1,5 +1,5 @@
 # url to main confluence EAP page on jetbrains website
-EAP_URL = "/display/IDEADEV/IDEA+15+EAP"
+EAP_URL = "/display/IDEADEV/IDEA+16+EAP"
 
 # this is where downloaded archive will be stored
 DOWNLOAD_PATH = "~/Downloads/intellij"
