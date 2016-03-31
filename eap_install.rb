@@ -17,6 +17,7 @@ def last_build_download_urls
     end
 
     download_pattern = /.*(https\:\/\/download\.jetbrains\.com\/idea\/ideaIU[^"]+\.tar\.gz)".*/m
+    
     download_url = download_pattern.match(eap_page.body)[1]
     log "   found #{download_url}"
 
@@ -25,6 +26,7 @@ end
 
 def download force = false
     download_path = File.expand_path(DOWNLOAD_PATH)
+    FileUtils.mkdir_p download_path unless File.exists?(download_path)
     
     url = last_build_download_urls
     
